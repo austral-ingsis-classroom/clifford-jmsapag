@@ -6,15 +6,18 @@ import edu.austral.ingsis.clifford.filesystem.Node;
 
 public class Cd implements Command {
 
-    private final Directory directory;
+    private final Node node;
 
-    public Cd(Directory directory) {
-        this.directory = directory;
+    public Cd(Node node) {
+        this.node = node;
     }
 
     @Override
     public String execute(FileSystem fileSystem) {
-        fileSystem.setCurrentDirectory(directory);
-        return "Moved to directory: '" + directory.getName() + "'";
+        if (node.isComposite()){
+            fileSystem.setCurrentDirectory((Directory) node);
+            return "Moved to directory: '" + node.getName() + "'";
+        }
+        return "Failed to move";
     }
 }
