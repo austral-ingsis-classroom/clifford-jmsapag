@@ -3,22 +3,30 @@ package edu.austral.ingsis.clifford.command;
 import edu.austral.ingsis.clifford.FileSystem;
 import edu.austral.ingsis.clifford.filesystem.Directory;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class Pwd implements Command {
 
-    @Override
-    public String execute(FileSystem fileSystem) {
-        Directory currentDirectory = fileSystem.currentDirectory();
-        List<String> folders = new ArrayList<>();
-        while (currentDirectory.getParent() != null) {
-            folders.add(currentDirectory.getName());
-        }
-        StringBuilder path = new StringBuilder();
-        for (int i = folders.size() - 1; i >= 0; i--) {
-            path.append("/").append(folders.get(i));
-        }
-        return path.toString();
+  @Override
+  public String execute(FileSystem fileSystem) {
+
+    // get the current directory from the file system
+    Directory currentDirectory = fileSystem.currentDirectory();
+
+    // get the full path of the current directory
+    String fullPath = buildPath(currentDirectory);
+
+    // return the full path, ensure it starts with /
+    return fullPath.isEmpty() ? "/" : fullPath;
+  }
+
+  // recursive method to build the full path from the current directory
+  private String buildPath(Directory currentDirectory) {
+
+    // base case: if the current directory has no parent, return its name or root
+    if (currentDirectory.getParent() == null) {
+      return "";
     }
+
+    // recursive call: get the parent's path, then append the current directory's name
+    return buildPath(currentDirectory.getParent()) + "/" + currentDirectory.getName();
+  }
 }
