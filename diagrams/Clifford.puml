@@ -1,0 +1,66 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+interface FileSystem{
++ String run(String commandLine)
++ Directory getRoot()
++ Directory currentDirectory()
++ void setCurrentDirectory(Directory directory)
+}
+
+class FileSystemImpl implements FileSystem{
+Directory currentDirectory
+Directory rootDirectory
+Map<String, CommandParser> parser
+- createParsersMap()
+}
+
+interface Node {
++ String getName()
++ Node getParent()
++ boolean isComposite()
+}
+
+class File implements Node{
+String name
+Directory parent
+}
+
+class Directory implements Node{
+List<Node> children;
+String name;
+Optional<Directory> parent;
++ getChildren()
++ addChild()
++ removeChild()
+}
+
+interface Command {
++ String execute(FileSystem fileSystem);
+}
+
+class Cd implements Command
+class Ls implements Command
+class Mkdir implements Command
+class Touch implements Command
+class Psw implements Command
+class Rm implements Command
+
+interface CommandParser {
++ Optional<Command> getCommand(String commandLine);
+}
+
+class CdParser implements CommandParser
+class LsParser implements CommandParser
+class MkdirParser implements CommandParser
+class TouchParser implements CommandParser
+class PswParser implements CommandParser
+class RmParser implements CommandParser
+
+
+Node --* Directory
+FileSystem --> Directory
+FileSystem --> CommandParser
+FileSystem --> Command
+
+@enduml
