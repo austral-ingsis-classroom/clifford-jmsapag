@@ -15,40 +15,46 @@ public class Cd implements Command {
   @Override
   public String execute(FileSystem fileSystem) {
 
-    // get the current directory
-    Directory current = fileSystem.currentDirectory();
+    // determine the starting directory based on whether the path is absolute or relative
+    Directory current = path.startsWith("/") ? fileSystem.getRoot() : fileSystem.currentDirectory();
 
-    // if the path starts with / we go and fetch the root
-    if (path.charAt(0) == '/') {
-      current = fileSystem.getRoot();
-    }
+    // split the path into individual directory components
+    String[] directories = path.split("/");
 
-    // split into individual directories
-    String[] e = path.split("/");
-
-    // iterate every possible directory
-    for (String node : e) {
-
-      // if there is a .., we want to go to a parent directory
-      if (node.equals("..") && (current.getParent() != null)) {
-        current = current.getParent(); // if there is a parent
-      } else if (node.equals("..") && (current.getParent() == null)) {
-        current = fileSystem.getRoot(); // if there is not it is the root
-      } else {
-        // look for the directory in the current directory's children
-        boolean exists = false;
-        for (Node n : current.getChildren()) {
-          if (n.getName().equals(node)) {
-            current = (Directory) n;
-            exists = true;
-          }
-        }
-        if (!exists) {
-          return "'" + node + "' directory does not exist";
-        }
+    // navigate through each directory in the path
+    for (String dir : directories) {
+      current = navigateToDirectory(current, dir);
+      // if the directory does not exist, return an error message
+      if (current == null) {
+        return "'" + dir + "' directory does not exist";
       }
     }
+
+    // set the current directory in the file system to the target directory
     fileSystem.setCurrentDirectory(current);
     return "moved to directory '" + current.getName() + "'";
+  }
+
+  private Directory navigateToDirectory(Directory current, String dir) {
+
+    // ignore empty and current directory components (".")
+    if (dir.isEmpty() || dir.equals(".")) {
+      return current;
+    }
+
+    // handle parent directory navigation
+    if (dir.equals("..")) {
+      return current.getParent() != null ? current.getParent() : current;
+    }
+
+    // search for the directory among the current directory's children
+    for (Node child : current.getChildren()) {
+      if (child.getName().equals(dir) && child instanceof Directory) {
+        return (Directory) child;
+      }
+    }
+
+    // return null if the directory does not exist
+    return null;
   }
 }
